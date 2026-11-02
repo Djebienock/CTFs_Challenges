@@ -1,0 +1,38 @@
+notes - side project (the "where do i actually keep going" thing)
+
+ok the idea, before i forget it again.
+
+my phone already logs step count, and it can see every wifi access point
+around me with a signal reading. problem: i keep ending up somewhere on
+autopilot and i honestly couldn't tell you where i go the most. so --
+cross-reference the two things i already have.
+
+the insight (i think this is right): a place that actually MATTERS shows
+up as me physically moving around near the same access point, again and
+again. not just a strong signal. my router at home is the loudest signal
+by a mile and that is obviously not some mystery "place" worth finding.
+loud just means close. close doesn't mean i went anywhere.
+
+so the whole trick is: only count a reading when the step counter says i
+was actually on the move around that time. if i was sitting still, throw
+it out, doesn't matter how strong the signal was. stationary = noise.
+figuring out where "sitting still" ends and "moving" begins took me
+forever, i kept nudging it.
+
+and not every access point should get equal credit. the ones i actually
+recognize and trust should carry more than some random hotspot i walked
+past once on the street. i listed the ones that count in aps.conf with a
+little number beside each -- bigger number = i trust it more. the numbers
+are just relative, don't read too much into them.
+
+then per access point it's basically: how strong, leaning on how much i
+trust the spot, but only from the times i was moving. tally it up. the one
+that rises to the top is the answer.
+
+TODO: do NOT write the exact "was i moving" cutoff in here. i keep changing
+it and then confusing myself. the one good run's log keeps the rows it
+accepted vs rejected, the real number falls out of that. leave it there.
+TODO: the decoys are brutal. the single loudest hotspot in the export is
+NOT the place -- found that out the embarrassing way. the trust weights
+are what save it. remember that.
+TODO: tidy this up. or just delete the whole project. probably delete.

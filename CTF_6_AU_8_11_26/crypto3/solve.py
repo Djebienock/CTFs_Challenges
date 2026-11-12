@@ -1,0 +1,95 @@
+import hashlib
+import json
+import requests
+from ecdsa.curves import SECP256k1
+
+# Configuration et constantes
+BASE_URL = "http://w04.ctf.chronos-security.ro:32931"
+N = SECP256k1.order
+
+MASTER_MSG_HEX = (
+    "544f5256454e2d415554485a2d56310a"
+    "6f7065726174696f6e3d70726f6d6f74652d6d61737465722d61726d696e670a"
+    "61727469666163743d6d61737465722d61726d696e672d696d6167650a"
+)
+
+
+def hash_to_int(msg_hex: str) -> int:
+    msg_bytes = bytes.fromhex(msg_hex)
+    digest = hashlib.sha256(msg_bytes).digest()
+    return int.from_bytes(digest, byteorder="big") % N
+
+
+# 1. Récupération des reçus
+resp = requests.get(f"{BASE_URL}/receipts")
+data = resp.json()
+receipts = data["receipts"]  # On accède bien à la liste des reçus
+
+signatures = []
+for item in receipts:
+    msg_hex = item["message_hex"]
+    r = int(item["r"], 16)
+    s = int(item["s"], 16)
+    z = hash_to_int(msg_hex)
+    signatures.append({"r": r, "s": s, "z": z})
+
+# 2. Recherche de réutilisation de nonce (même r)
+recovered_d = None
+
+for i in range(len(signatures)):
+    for j in range(i + 1, len(signatures)):
+        sig1 = signatures[i]
+        sig2 = signatures[j]
+
+        if sig1["r"] == sig2["r"]:
+            print(f"[+] Réutilisation de nonce trouvée entre les reçus !")
+            r = sig1["r"]
+            s1, z1 = sig1["s"], sig1["z"]
+            s2, z2 = sig2["s"], sig2["z"]
+
+            # k = (z1 - z2) * inv(s1 - s2) mod n
+            num_k = (z1 - z2) % N
+            den_k = (s1 - s2) % N
+            k = (num_k * pow(den_k, -1, N)) % N
+
+            # d = (s1 * k - z1) * inv(r) mod n
+            num_d = (s1 * k - z1) % N
+            d = (num_d * pow(r, -1, N)) % N
+
+            recovered_d = d
+            print(f"[+] Clé privée d récupérée : {hex(d)}")
+            break
+    if recovered_d:
+        break
+
+if not recovered_d:
+    print("[-] Aucun nonce réutilisé trouvé.")
+    exit(1)
+
+# 3. Signature du message maître
+z_master = hash_to_int(MASTER_MSG_HEX)
+
+# Choix d'un nonce k arbitraire
+k_new = 1337
+r_point = k_new * SECP256k1.generator
+r_new = r_point.x() % N
+s_new = (pow(k_new, -1, N) * (z_master + r_new * recovered_d)) % N
+
+# Application de la règle low-s (exigée par le schéma)
+if s_new > N // 2:
+    s_new = N - s_new
+
+r_hex = f"{r_new:064x}"
+s_hex = f"{s_new:064x}"
+
+# 4. Envoi de la requête POST vers /authorize (JSON strict et minifié)
+payload = json.dumps(
+    {"message_hex": MASTER_MSG_HEX, "r": r_hex, "s": s_hex},
+    separators=(",", ":"),
+)
+
+headers = {"Content-Type": "application/json"}
+res = requests.post(f"{BASE_URL}/authorize", data=payload, headers=headers)
+
+print("[+] Réponse du serveur (Flag) :")
+print(res.text)

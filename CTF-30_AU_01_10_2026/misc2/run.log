@@ -1,0 +1,19 @@
+# place-finder verbose run (debug)  tracker.py --verbose --only CafeDelMundo,HomePlex_5G
+[2026-02-16 08:23:40] loading weights from aps.conf
+[2026-02-16 08:23:40] loaded 4 trusted access point(s); ignoring everything else
+[2026-02-16 08:23:40] reading scan_export.csv (33 rows)
+[2026-02-16 08:23:40] -- CafeDelMundo (w=2) --
+[2026-02-16 08:23:40]    signal=62  step_delta= 40  -> stationary, dropped
+[2026-02-16 08:23:40]    signal=58  step_delta= 41  -> moving, kept
+[2026-02-16 08:23:40]    signal=60  step_delta= 58  -> moving, kept
+[2026-02-16 08:23:40]    signal=64  step_delta= 77  -> moving, kept
+[2026-02-16 08:23:40]    subtotal = 364
+[2026-02-16 08:23:40] -- HomePlex_5G (w=2) --
+[2026-02-16 08:23:40]    signal=92  step_delta=  5  -> stationary, dropped
+[2026-02-16 08:23:40]    signal=90  step_delta= 11  -> stationary, dropped
+[2026-02-16 08:23:40]    signal=87  step_delta= 44  -> moving, kept
+[2026-02-16 08:23:40]    (7 more rows dropped)
+[2026-02-16 08:23:40]    subtotal = 174
+[2026-02-16 08:23:40] (loud at home, but almost never moving there -- note to self)
+[2026-02-16 08:23:41] ranking all trusted access points ...
+[2026-02-16 08:23:41] done; wrote winner to place.txt
